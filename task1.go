@@ -52,8 +52,8 @@ func request(address *string, reqStruct *requestStruct) {
 }
 
 func reqAnalysis(req []time.Duration) (time.Duration, time.Duration, time.Duration) {
-	minTime := req[1]
-	maxTime := req[1]
+	minTime := req[0]
+	maxTime := req[0]
 	sum := 0
 	for i := 0; i < len(req); i++ {
 		sum = sum + int(req[i])
