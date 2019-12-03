@@ -1,10 +1,11 @@
 package apiserver
 
 import (
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/trzhensimekh/cursesGo/task2Rest/store"
-	"io"
 	"net/http"
+	_ "encoding/json" // ...
 )
 
 //APIServer ...
@@ -33,7 +34,7 @@ func (s *APIServer)Start() error {
 }
 
 func (s *APIServer) configureRouter(){
-	s.router.HandleFunc("/hello",s.HandleHello())
+	s.router.HandleFunc("/users",s.HandleUsers())
 }
 
 func (s *APIServer) configureStore() error {
@@ -45,9 +46,20 @@ s.store = st
 return nil
 }
 
-func (s *APIServer) HandleHello() http.HandlerFunc {
+func (s *APIServer) HandleUsers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request){
-		io.WriteString(w, "Hello")
-}
+		users,_:=s.store.User().GetUsers();
+		json.NewEncoder(w).Encode(users)
+	/*
+		if err!=nil{
+			io.WriteString(w, "error")
+		}
+		for u := range users {
+
+			io.WriteString(w, string(u))
+		}
+	 */
+
+	}
 }
 

@@ -1,6 +1,9 @@
 package store
 
-import "github.com/trzhensimekh/cursesGo/task2Rest/model"
+import (
+	"fmt"
+	"github.com/trzhensimekh/cursesGo/task2Rest/model"
+)
 
 // UserRep ...
 type UserRep struct {
@@ -18,7 +21,6 @@ if err := r.Store.db.QueryRow(
 	).Scan(&u.Id); err!=nil{
 	return nil,err
 }
-
 return u, nil
 }
 
@@ -38,4 +40,28 @@ func (r *UserRep) FindByID(id int)(*model.User,error){
 	}
 
 	return u, nil
+}
+
+func (r *UserRep) GetUsers() ([]model.User, error) {
+	var users []model.User
+	u := new(model.User)
+	rows,err := r.Store.db.Query(
+		"SELECT * FROM USERS")
+	if err!=nil{
+		return nil, err
+	}
+
+	for rows.Next() {
+		err:=rows.Scan(
+			&u.Id,
+			&u.FistName,
+			&u.LastName,
+			&u.Email,
+		)
+		if err!=nil{
+			fmt.Println(err.Error())
+		}
+		users = append(users, *u)
+	}
+	return users,nil
 }
