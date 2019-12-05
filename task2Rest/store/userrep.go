@@ -10,20 +10,6 @@ type UserRep struct {
 Store *Store
 }
 
-// Create ...
-func (r *UserRep) Create(u *model.User)(*model.User,error){
-if err := r.Store.db.QueryRow(
-	"INSERT INTO users(id, firstname, lastname, email) VALUES ($1,$2,$3,$4) RETURNING id",
-	u.Id,
-	u.FistName,
-	u.LastName,
-	u.Email,
-	).Scan(&u.Id); err!=nil{
-	return nil,err
-}
-return u, nil
-}
-
 //FindByID ...
 func (r *UserRep) FindByID(id int)(*model.User,error){
 	u:=&model.User{}
@@ -64,4 +50,16 @@ func (r *UserRep) GetUsers() ([]model.User, error) {
 		users = append(users, *u)
 	}
 	return users,nil
+}
+
+func (r *UserRep) CreateUser(u model.User) (model.User, error) {
+	if err := r.Store.db.QueryRow(
+		"INSERT INTO users(firstname, lastname, email) VALUES ($1,$2,$3) RETURNING id",
+		u.FistName,
+		u.LastName,
+		u.Email,
+	).Scan(&u.Id); err!=nil{
+		return u ,err
+	}
+	return u, nil
 }
