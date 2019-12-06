@@ -11,7 +11,7 @@ Store *Store
 }
 
 //FindByID ...
-func (r *UserRep) FindByID(id int)(*model.User,error){
+func (r *UserRep) FindByID(id int) (*model.User, error) {
 	u:=&model.User{}
 	if err:= r.Store.db.QueryRow(
 		"SELECT id, firstname, lastname, email FROM USERS WHERE id=$1",
@@ -52,7 +52,7 @@ func (r *UserRep) GetUsers() ([]model.User, error) {
 	return users,nil
 }
 
-func (r *UserRep) CreateUser(u model.User) (model.User, error) {
+func (r *UserRep) CreateUser(u *model.User) (*model.User, error) {
 	if err := r.Store.db.QueryRow(
 		"INSERT INTO users(firstname, lastname, email) VALUES ($1,$2,$3) RETURNING id",
 		u.FistName,
@@ -63,3 +63,38 @@ func (r *UserRep) CreateUser(u model.User) (model.User, error) {
 	}
 	return u, nil
 }
+
+func (r *UserRep) UpdatedByID(u *model.User) (*model.User, error) {
+	if err:= r.Store.db.QueryRow(
+		"UPDATE USERS SET firstname=$1 ,lastname=$2, email=$3  WHERE id=$4 RETURNING id, firstname ,lastname, email",
+		u.FistName,
+		u.LastName,
+		u.Email,
+		u.Id,
+	).Scan(
+		&u.Id,
+		&u.FistName,
+		&u.LastName,
+		&u.Email,
+	); err!=nil {
+		return nil,err
+	}
+	return u, nil
+}
+
+func (r *UserRep) DeleteByID(u *model.User) (*model.User, error) {
+	if err:= r.Store.db.QueryRow(
+		"DELETE FROM users WHERE id=$1 RETURNING id, firstname ,lastname, email",
+		u.Id,
+	).Scan(
+		&u.Id,
+		&u.FistName,
+		&u.LastName,
+		&u.Email,
+	); err!=nil {
+		return nil,err
+	}
+	return u, nil
+}
+
+

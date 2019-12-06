@@ -7,16 +7,17 @@ import (
 	"github.com/trzhensimekh/cursesGo/task2Rest/store"
 	"net/http"
 	_ "encoding/json" // ...
+	"strconv"
 )
 
-//APIServer ...
+
 type APIServer struct{
 	config *Config
 	router *mux.Router
 	store *store.Store
 }
 
-// New ...
+
 func New(config*Config)*APIServer {
 	return &APIServer{
 		config: config,
@@ -24,7 +25,7 @@ func New(config*Config)*APIServer {
 	}
 }
 
-// Start ...
+
 func (s *APIServer)Start() error {
 	s.configureRouter()
 	if err :=s.configureStore(); err!=nil {
@@ -36,7 +37,10 @@ func (s *APIServer)Start() error {
 
 func (s *APIServer) configureRouter(){
 	s.router.HandleFunc("/users",s.HandleUsers()).Methods("GET")
-	s.router.HandleFunc("/users",s.HandleUserCreater()).Methods("POST")
+	s.router.HandleFunc("/users/{id}",s.FindUserById()).Methods("GET")
+	s.router.HandleFunc("/users",s.UserCreaterHandler()).Methods("POST")
+	s.router.HandleFunc("/users/{id}",s.UpdateUserById()).Methods("PUT")
+	s.router.HandleFunc("/users/{id}",s.DeleteUserById()).Methods("DELETE")
 }
 
 func (s *APIServer) configureStore() error {
@@ -56,13 +60,47 @@ func (s *APIServer) HandleUsers() http.HandlerFunc {
 	}
 }
 
-func (s *APIServer) HandleUserCreater() http.HandlerFunc {
+func (s *APIServer) UserCreaterHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request){
 		w.Header().Set("Content-Type", "application/json")
-		var user model.User
+		var user *model.User
 		_ = json.NewDecoder(r.Body).Decode(&user)
 		user,_=s.store.User().CreateUser(user);
 		json.NewEncoder(w).Encode(user)
 	}
 }
 
+func (s *APIServer) FindUserById() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request){
+		w.Header().Set("Content-Type", "application/json")
+		params := mux.Vars(r)
+		id,_:=strconv.Atoi(params["id"])
+		user,_ := s.store.User().FindByID(id);
+		json.NewEncoder(w).Encode(user)
+	}
+}
+
+func (s *APIServer) UpdateUserById() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request){
+		w.Header().Set("Content-Type", "application/json")
+		params := mux.Vars(r)
+		var user *model.User
+		_ = json.NewDecoder(r.Body).Decode(&user)
+		id,_:=strconv.Atoi(params["id"])
+		user.Id = id
+		user,_ = s.store.User().UpdatedByID(user);
+		json.NewEncoder(w).Encode(user)
+	}
+}
+
+func (s *APIServer) DeleteUserById() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		params := mux.Vars(r)
+		user:= new(model.User)
+		id, _ := strconv.Atoi(params["id"])
+		user.Id = id
+		user, _ = s.store.User().DeleteByID(user);
+		json.NewEncoder(w).Encode(user)
+	}
+}
