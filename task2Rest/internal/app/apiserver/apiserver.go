@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/trzhensimekh/cursesGo/task2Rest/model"
 	"github.com/trzhensimekh/cursesGo/task2Rest/store"
+	"log"
 	"net/http"
 	_ "encoding/json" // ...
 	"strconv"
@@ -65,7 +66,10 @@ func (s *APIServer) UserCreaterHandler() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		var user *model.User
 		_ = json.NewDecoder(r.Body).Decode(&user)
-		user,_=s.store.User().CreateUser(user);
+		err:=s.store.User().CreateUser(user);
+		if err != nil {
+			log.Fatal(err)
+		}
 		json.NewEncoder(w).Encode(user)
 	}
 }
@@ -88,7 +92,10 @@ func (s *APIServer) UpdateUserById() http.HandlerFunc {
 		_ = json.NewDecoder(r.Body).Decode(&user)
 		id,_:=strconv.Atoi(params["id"])
 		user.Id = id
-		user,_ = s.store.User().UpdatedByID(user);
+		err := s.store.User().UpdatedByID(user);
+		if err != nil {
+			log.Fatal(err)
+		}
 		json.NewEncoder(w).Encode(user)
 	}
 }
