@@ -36,7 +36,6 @@ func (r *UserRep) GetUsers() ([]model.User, error) {
 	if err!=nil{
 		return nil, err
 	}
-
 	for rows.Next() {
 		err:=rows.Scan(
 			&u.Id,
