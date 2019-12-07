@@ -79,7 +79,10 @@ func (s *APIServer) FindUserById() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		params := mux.Vars(r)
 		id,_:=strconv.Atoi(params["id"])
-		user,_ := s.store.User().FindByID(id);
+		user,err := s.store.User().FindByID(id);
+		if err != nil {
+			log.Fatal(err)
+		}
 		json.NewEncoder(w).Encode(user)
 	}
 }
@@ -107,7 +110,10 @@ func (s *APIServer) DeleteUserById() http.HandlerFunc {
 		user:= new(model.User)
 		id, _ := strconv.Atoi(params["id"])
 		user.Id = id
-		user, _ = s.store.User().DeleteByID(user);
+		err:= s.store.User().DeleteByID(user);
+		if err != nil {
+			log.Fatal(err)
+		}
 		json.NewEncoder(w).Encode(user)
 	}
 }
