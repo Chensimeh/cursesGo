@@ -2,12 +2,12 @@ package apiserver
 
 import (
 	"encoding/json"
+	_ "encoding/json" // ...
 	"github.com/gorilla/mux"
 	"github.com/trzhensimekh/cursesGo/task2Rest/model"
 	"github.com/trzhensimekh/cursesGo/task2Rest/store"
 	"log"
 	"net/http"
-	_ "encoding/json" // ...
 	"strconv"
 )
 
@@ -44,6 +44,9 @@ func (s *APIServer) configureRouter(){
 	s.router.HandleFunc("/users/{id}",s.DeleteUserById()).Methods("DELETE")
 	s.router.HandleFunc("/users/{id}/messages/{msg_id}",s.FindMsgById()).Methods("GET")
 	s.router.HandleFunc("/users/{id}/messages",s.HandleUserMsgs()).Methods("GET")
+	s.router.HandleFunc("/users/{id}/messages",s.MsgCreaterHandler()).Methods("POST")
+	s.router.HandleFunc("/users/{id}/messages/{msg_id}",s.UpdateMsgById()).Methods("PUT")
+	s.router.HandleFunc("/users/{id}/messages/{msg_id}",s.DeleteMsgById()).Methods("DELETE")
 }
 
 func (s *APIServer) configureStore() error {
@@ -146,5 +149,53 @@ func (s *APIServer) HandleUserMsgs() http.HandlerFunc {
 			log.Fatal(err)
 		}
 		json.NewEncoder(w).Encode(messeges)
+	}
+}
+
+func (s *APIServer) MsgCreaterHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request){
+		w.Header().Set("Content-Type", "application/json")
+		var message *model.Message
+		params := mux.Vars(r)
+		id,_:=strconv.Atoi(params["id"])
+		_ = json.NewDecoder(r.Body).Decode(&message)
+		message.User_id=id
+		err:=s.store.Msg().CreateUser(message);
+		if err != nil {
+			log.Fatal(err)
+		}
+		json.NewEncoder(w).Encode(message)
+	}
+}
+
+func (s *APIServer) UpdateMsgById() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request){
+		w.Header().Set("Content-Type", "application/json")
+		params := mux.Vars(r)
+		var msg *model.Message
+		_ = json.NewDecoder(r.Body).Decode(&msg)
+		id,_:=strconv.Atoi(params["msg_id"])
+		msg.Id = id
+		err := s.store.Msg().UpdatedByID(msg);
+		if err != nil {
+			log.Fatal(err)
+		}
+		json.NewEncoder(w).Encode(msg)
+	}
+}
+
+func (s *APIServer) DeleteMsgById() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request){
+		w.Header().Set("Content-Type", "application/json")
+		params := mux.Vars(r)
+		msg:=new(model.Message)
+		_ = json.NewDecoder(r.Body).Decode(&msg)
+		id,_:=strconv.Atoi(params["msg_id"])
+		msg.Id = id
+		err := s.store.Msg().DeleteByID(msg);
+		if err != nil {
+			log.Fatal(err)
+		}
+		json.NewEncoder(w).Encode(msg)
 	}
 }

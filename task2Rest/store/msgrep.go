@@ -50,3 +50,46 @@ func (r *MsgRep) GetUserMsg(id int) ([]model.Message, error) {
 	return msgs,nil
 }
 
+func (r *MsgRep) CreateUser(m *model.Message) error {
+	if err := r.Store.db.QueryRow(
+		"INSERT INTO messages(message, user_id) VALUES ($1,$2) RETURNING id",
+		m.Message,
+		m.User_id,
+	).Scan(&m.Id); err!=nil{
+		return err
+	}
+	return nil
+}
+
+func (r *MsgRep) UpdatedByID(m *model.Message) error {
+	if err:= r.Store.db.QueryRow(
+		"UPDATE messages SET message=$1, user_id=$2  WHERE id=$3 RETURNING id, message, user_id",
+		m.Message,
+		m.User_id,
+		m.Id,
+	).Scan(
+		&m.Id,
+		&m.Message,
+		&m.User_id,
+	); err!=nil {
+		return err
+	}
+	return nil
+}
+
+func (r *MsgRep) DeleteByID(m *model.Message) error{
+	if err:= r.Store.db.QueryRow(
+		"DELETE FROM messages WHERE id=$1 RETURNING id, message, user_id",
+		m.Id,
+	).Scan(
+		&m.Id,
+		&m.Message,
+		&m.User_id,
+	); err!=nil {
+		return err
+	}
+	return nil
+}
+
+
+
