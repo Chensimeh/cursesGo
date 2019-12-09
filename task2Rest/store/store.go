@@ -11,6 +11,7 @@ type Store struct {
 	config *Config
 	db *sql.DB
 	userRep *UserRep
+	msgRep *MsgRep
 }
 
 
@@ -52,5 +53,17 @@ func (s *Store) User() *UserRep{
 	}
 	return s.userRep
 }
-// store.User().Create() - create new User
+
+//Message ...
+func (s *Store) Msg() *MsgRep{
+	if s.userRep!=nil{
+		return s.msgRep
+	}
+
+	s.msgRep = &MsgRep{
+		Store: s,
+	}
+	return s.msgRep
+}
+
 

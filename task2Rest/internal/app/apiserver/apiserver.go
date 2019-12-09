@@ -42,6 +42,8 @@ func (s *APIServer) configureRouter(){
 	s.router.HandleFunc("/users",s.UserCreaterHandler()).Methods("POST")
 	s.router.HandleFunc("/users/{id}",s.UpdateUserById()).Methods("PUT")
 	s.router.HandleFunc("/users/{id}",s.DeleteUserById()).Methods("DELETE")
+	s.router.HandleFunc("/users/{id}/messages/{msg_id}",s.FindMsgById()).Methods("GET")
+	s.router.HandleFunc("/users/{id}/messages",s.HandleUserMsgs()).Methods("GET")
 }
 
 func (s *APIServer) configureStore() error {
@@ -56,7 +58,10 @@ return nil
 func (s *APIServer) HandleUsers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request){
 		w.Header().Set("Content-Type", "application/json")
-		users,_:=s.store.User().GetUsers();
+		users,err:=s.store.User().GetUsers();
+		if err != nil {
+			log.Fatal(err)
+		}
 		json.NewEncoder(w).Encode(users)
 	}
 }
@@ -115,5 +120,31 @@ func (s *APIServer) DeleteUserById() http.HandlerFunc {
 			log.Fatal(err)
 		}
 		json.NewEncoder(w).Encode(user)
+	}
+}
+
+func (s *APIServer) FindMsgById() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		params := mux.Vars(r)
+		id,_:=strconv.Atoi(params["msg_id"])
+		msg,err := s.store.Msg().FindByID(id);
+		if err != nil {
+			log.Fatal(err)
+		}
+		json.NewEncoder(w).Encode(msg)
+	}
+}
+
+func (s *APIServer) HandleUserMsgs() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request){
+		w.Header().Set("Content-Type", "application/json")
+		params := mux.Vars(r)
+		id,_:=strconv.Atoi(params["id"])
+		messeges,err:=s.store.Msg().GetUserMsg(id);
+		if err != nil {
+			log.Fatal(err)
+		}
+		json.NewEncoder(w).Encode(messeges)
 	}
 }
