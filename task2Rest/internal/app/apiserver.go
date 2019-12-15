@@ -12,47 +12,43 @@ import (
 	"time"
 )
 
-
-type APIServer struct{
+type APIServer struct {
 	config *Config
 	router *mux.Router
 	logger *logrus.Logger
 }
 
-
-func New(config*Config)*APIServer {
+func New(config *Config) *APIServer {
 	return &APIServer{
 		config: config,
-		router:mux.NewRouter(),
-		logger:logrus.New(),
+		router: mux.NewRouter(),
+		logger: logrus.New(),
 	}
 }
 
-
-func (s *APIServer)Start() error {
+func (s *APIServer) Start() error {
 	s.configureRouter()
-	return http.ListenAndServe(s.config.BindAddr,s.router)
+	return http.ListenAndServe(s.config.BindAddr, s.router)
 }
 
-func (s *APIServer) configureRouter(){
+func (s *APIServer) configureRouter() {
 	s.router.Use(s.headRequest)
 	s.router.Use(s.logRequest)
-	s.router.HandleFunc("/users",s.HandleUsers()).Methods("GET")
-	s.router.HandleFunc("/users/{id}",s.FindUserById()).Methods("GET")
-	s.router.HandleFunc("/users",s.UserCreaterHandler()).Methods("POST")
-	s.router.HandleFunc("/users/{id}",s.UpdateUserById()).Methods("PUT")
-	s.router.HandleFunc("/users/{id}",s.DeleteUserById()).Methods("DELETE")
-	s.router.HandleFunc("/users/{id}/messages/{msg_id}",s.FindMsgById()).Methods("GET")
-	s.router.HandleFunc("/users/{id}/messages",s.HandleUserMsgs()).Methods("GET")
-	s.router.HandleFunc("/users/{id}/messages",s.MsgCreaterHandler()).Methods("POST")
-	s.router.HandleFunc("/users/{id}/messages/{msg_id}",s.UpdateMsgById()).Methods("PUT")
-	s.router.HandleFunc("/users/{id}/messages/{msg_id}",s.DeleteMsgById()).Methods("DELETE")
+	s.router.HandleFunc("/users", s.HandleUsers()).Methods("GET")
+	s.router.HandleFunc("/users/{id}", s.FindUserById()).Methods("GET")
+	s.router.HandleFunc("/users", s.UserCreaterHandler()).Methods("POST")
+	s.router.HandleFunc("/users/{id}", s.UpdateUserById()).Methods("PUT")
+	s.router.HandleFunc("/users/{id}", s.DeleteUserById()).Methods("DELETE")
+	s.router.HandleFunc("/users/{id}/messages/{msg_id}", s.FindMsgById()).Methods("GET")
+	s.router.HandleFunc("/users/{id}/messages", s.HandleUserMsgs()).Methods("GET")
+	s.router.HandleFunc("/users/{id}/messages", s.MsgCreaterHandler()).Methods("POST")
+	s.router.HandleFunc("/users/{id}/messages/{msg_id}", s.UpdateMsgById()).Methods("PUT")
+	s.router.HandleFunc("/users/{id}/messages/{msg_id}", s.DeleteMsgById()).Methods("DELETE")
 }
 
-
 func (s *APIServer) HandleUsers() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request){
-		users,err:=(&data.User{}).GetUsers();
+	return func(w http.ResponseWriter, r *http.Request) {
+		users, err := (&data.User{}).GetUsers()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -61,11 +57,11 @@ func (s *APIServer) HandleUsers() http.HandlerFunc {
 }
 
 func (s *APIServer) UserCreaterHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request){
-	//	w.Header().Set("Content-Type", "application/json")
+	return func(w http.ResponseWriter, r *http.Request) {
+		//	w.Header().Set("Content-Type", "application/json")
 		var user *data.User
 		_ = json.NewDecoder(r.Body).Decode(&user)
-		err:=user.CreateUser();
+		err := user.CreateUser()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -74,10 +70,10 @@ func (s *APIServer) UserCreaterHandler() http.HandlerFunc {
 }
 
 func (s *APIServer) FindUserById() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request){
+	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
-		id,_:=strconv.Atoi(params["id"])
-		user,err := (&data.User{Id:id}).FindByID();
+		id, _ := strconv.Atoi(params["id"])
+		user, err := (&data.User{Id: id}).FindByID()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -86,13 +82,13 @@ func (s *APIServer) FindUserById() http.HandlerFunc {
 }
 
 func (s *APIServer) UpdateUserById() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request){
+	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
 		var user *data.User
 		_ = json.NewDecoder(r.Body).Decode(&user)
-		id,_:=strconv.Atoi(params["id"])
+		id, _ := strconv.Atoi(params["id"])
 		user.Id = id
-		err := user.UpdatedByID();
+		err := user.UpdatedByID()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -103,10 +99,10 @@ func (s *APIServer) UpdateUserById() http.HandlerFunc {
 func (s *APIServer) DeleteUserById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
-		user:= new(data.User)
+		user := new(data.User)
 		id, _ := strconv.Atoi(params["id"])
 		user.Id = id
-		err:= user.DeleteByID();
+		err := user.DeleteByID()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -118,8 +114,8 @@ func (s *APIServer) FindMsgById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		params := mux.Vars(r)
-		id,_:=strconv.Atoi(params["msg_id"])
-		msg,err :=(&data.Message{Id:id}).FindMsgByID();
+		id, _ := strconv.Atoi(params["msg_id"])
+		msg, err := (&data.Message{Id: id}).FindMsgByID()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -128,10 +124,10 @@ func (s *APIServer) FindMsgById() http.HandlerFunc {
 }
 
 func (s *APIServer) HandleUserMsgs() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request){
+	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
-		id,_:=strconv.Atoi(params["id"])
-		 messeges, err:= (&data.Message{Id: id}).GetUserMsg();
+		id, _ := strconv.Atoi(params["id"])
+		messeges, err := (&data.Message{Id: id}).GetUserMsg()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -140,14 +136,14 @@ func (s *APIServer) HandleUserMsgs() http.HandlerFunc {
 }
 
 func (s *APIServer) MsgCreaterHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request){
-	//	w.Header().Set("Content-Type", "application/json")
+	return func(w http.ResponseWriter, r *http.Request) {
+		//	w.Header().Set("Content-Type", "application/json")
 		var message *data.Message
 		params := mux.Vars(r)
-		id,_:=strconv.Atoi(params["id"])
+		id, _ := strconv.Atoi(params["id"])
 		_ = json.NewDecoder(r.Body).Decode(&message)
-		message.UserId=id
-		err:=message.CreateMsg();
+		message.UserId = id
+		err := message.CreateMsg()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -156,14 +152,14 @@ func (s *APIServer) MsgCreaterHandler() http.HandlerFunc {
 }
 
 func (s *APIServer) UpdateMsgById() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request){
-	//	w.Header().Set("Content-Type", "application/json")
+	return func(w http.ResponseWriter, r *http.Request) {
+		//	w.Header().Set("Content-Type", "application/json")
 		params := mux.Vars(r)
 		var msg *data.Message
 		_ = json.NewDecoder(r.Body).Decode(&msg)
-		id,_:=strconv.Atoi(params["msg_id"])
+		id, _ := strconv.Atoi(params["msg_id"])
 		msg.Id = id
-		err := msg.UpdatedByID();
+		err := msg.UpdatedByID()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -172,14 +168,14 @@ func (s *APIServer) UpdateMsgById() http.HandlerFunc {
 }
 
 func (s *APIServer) DeleteMsgById() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request){
-	//	w.Header().Set("Content-Type", "application/json")
+	return func(w http.ResponseWriter, r *http.Request) {
+		//	w.Header().Set("Content-Type", "application/json")
 		params := mux.Vars(r)
-		msg:=new(data.Message)
+		msg := new(data.Message)
 		_ = json.NewDecoder(r.Body).Decode(&msg)
-		id,_:=strconv.Atoi(params["msg_id"])
+		id, _ := strconv.Atoi(params["msg_id"])
 		msg.Id = id
-		err := msg.DeleteByID();
+		err := msg.DeleteByID()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -222,4 +218,4 @@ func (s *APIServer) headRequest(next http.Handler) http.Handler {
 		w.Header().Set("Content-Type", "application/json")
 		next.ServeHTTP(w, r)
 	})
-	}
+}

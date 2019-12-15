@@ -6,8 +6,8 @@ import (
 
 // Config ...
 type Config struct {
-	BindAddr    string `toml:"bind_addr"`
-	Store       *data.Config
+	BindAddr string `toml:"bind_addr"`
+	Store    *data.Config
 }
 
 // NewConfig ...
